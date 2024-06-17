@@ -197,8 +197,154 @@ CMD ["node", "/app/app.js"]
 > Exemple
 > docker build -t mynode:latest .
 
+Le point indique l'emplacement du Dockerfile. Donc ici, dans le répertoire courant.
+
 ### Exécution
 
 > docker run mynode
 
 ## Les étapes de la construction d'une image
+
+Un **Dockerfile** est interprété de haut en bas.
+
+## Les instructions FROM, WORKDIR, RUN, COPY et ADD
+
+Le dièse _#_ permet d'écrire des commentaires dans un **Dockerfile**.
+
+### FROM
+
+Le FROM est toujours présent 1 et 1 seule fois.
+
+### RUN
+
+RUN exécute toutes les commandes spécifiées dans une nouvelle couche (layer). L'image qui en résulte sera utilisée pour la prochaine instruction (également appelée étape).
+
+### COPY
+
+COPY indique notre source.
+
+### ADD
+
+On peut remplacer COPY par ADD. La source peut alors être une URL ou un fichier compressé.
+
+### WORKDIR
+
+Permet de nous situer dans le container. Indiquer le dossier courant.
+
+Je peux remplacer
+COPY ./app.js /app/
+
+Par
+WORKDIR /app
+COPY ./appjs .
+
+## Les instructions CMD et ENTRYPOINT
+
+### CMD
+
+Le premier élément passé à CMD est l'exécutable. Les éléments suivants sont les arguments.
+
+Exemple :
+CMD ["node", "app.js"]
+
+Si on tape :
+
+> docker run node:test echo "test"
+
+Alors ce qui est après "node:test" va s'exécuter à la place du contenu de CMD.
+
+### ENTRYPOINT
+
+ENTRYPOINT ["node", "app.js"]
+
+Interdit la possibilité d'ajouter une action (cf CMD ci-dessus).
+Inutile de passer des paramètres. Donc ceci ne sert à rien :
+
+> docker run node:test echo "test"
+
+Ca, ok :
+
+> docker run node:test
+
+## Les instructions ARG, ENV, LABEL et la commande inspect
+
+### ARG
+
+Permet de passer des paramètres particuliers.
+
+ARG folder
+ARG file
+
+COPY $file $folder/
+
+> docker build --build-arg folder=/app --build-arg file=app.js .
+
+Valeur par défaut :
+ARG folder=/app
+
+ARG et un commentaire (#) sont les seules choses qu'on peut placer avant le FROM.
+Les ARG utilisés avant le FROM ne pourront être utilisés que par le FROM.
+
+### ENV
+
+ENV est plus utilisé que ARG.
+
+Avec ENV, on est obligé d'indiquer une valeur par défaut.
+
+ENV environment=production
+
+Il est possible de faire :
+ARG environment
+ENV environment=$environment
+
+### LABEL
+
+Permet de donner des indications pour les utilisateur de notre image Docker.
+
+LABEL MAINTAINER=moi@gmail.com
+LABEL version=1.0
+
+On peut accéder à ces infos :
+
+> docker image inspect mynode
+> docker container inspect 53ds
+
+_53ds_ est le début de l'ID du container.
+
+## Docker commit, logs, tags, history
+
+### Docker commit
+
+On peut passer d'un container à une image.
+
+> docker container commit --help
+
+> docker container commit -c 'CMD ["node","/app/app.js"]' 53ds
+
+### Docker logs
+
+> docker container logs 53ds
+
+Si le container est actif :
+
+> docker container logs -f 53ds
+
+### Docker tags
+
+Permet de créer un tag pour une image.
+
+> docker tag SOURCE:TAG CIBLE:TAG
+
+> docker image tag mynode:latest mynode:1.0
+
+### Docker history
+
+Permet de lister les couches ou les images utilisées pour la construction de l'image.
+
+> docker image history 1d34
+
+_1d34_ est le début de l'ID de l'image dont je veux voir le history.
+
+# 3. Trouver et partager des images Docker
+
+## Présentation de Docker Hub
