@@ -403,3 +403,27 @@ Pour exploiter ce .tar :
 > docker image import moncontainer.tar mynodetest
 
 # 4. Créer une image Docker pour un serveur Node
+
+## Introduction au projet
+
+Mise en place d'un petit serveur Node.js , voir le dossier node-server.
+
+> docker build -t myapp .
+> docker container run myapp
+
+=> Problème (résolu ci-après).
+
+## Corriger le PATH
+
+2 possibilités :
+
+1. soit indiquer le chemin dans CMD,
+2. soit modifier la variable PATH.
+
+-
+
+1. CMD ["./node_modules/.bin/nodemon","app.js"]
+2. Juste avant le CMD, ajouter :
+   ENV PATH=$PATH:/app/node_modules/.bin
+
+## Publier et exposer des ports
