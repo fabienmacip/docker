@@ -347,4 +347,59 @@ _1d34_ est le début de l'ID de l'image dont je veux voir le history.
 
 # 3. Trouver et partager des images Docker
 
-## Présentation de Docker Hub
+## Publier ses images sur Docker Hub
+
+Se connecter à hub.docker.com .
+
+Compte gratuit :
+
+- 1 seul répertoire privé,
+- plusieurs répertoires publics.
+
+On nettoie en local :
+
+> docker system prune -a
+
+> docker login
+
+> docker build -t fabienmacip/mynode:1.0 .
+
+> docker image ls
+
+> docker image push fabienmacip/mynode
+
+On peut ensuite pull au besoin :
+
+> docker pull fabienmacip/mynode
+
+## Les commandes save et load
+
+Partager une image Docker sans passer par le Docker-Hub.
+
+> docker build -t mynode:0.1 .
+
+> docker image save -o mesimages.tar mynode
+
+Le fichier _mesimages.tar_ est créé.
+
+Quelqu'un peut récupérer ce fichier .tar puis :
+
+> docker image load < mesimages.tar
+
+ou
+
+> docker image load -i mesimages.tar
+
+ou
+
+> docker image load --input mesimages.tar
+
+## Les commandes export et import
+
+> docker container export -o moncontainer.tar 53ds
+
+Pour exploiter ce .tar :
+
+> docker image import moncontainer.tar mynodetest
+
+# 4. Créer une image Docker pour un serveur Node
