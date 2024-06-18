@@ -592,4 +592,56 @@ Les TMPFS ne sont pas persistés. Ils permettent de garder des données en mémo
 
 ### 6. Les réseaux Docker
 
-## Introduction aux réseaux
+## Le réseau bridge
+
+Par défaut, le network créé s'appelle _bridge_. Et tous les containers y sont reliés.
+
+> docker network
+
+> docker network inspect bridge
+
+## Créer ses réseaux bridge
+
+Faire communiquer les containers sur le network _bridge_ en utilisant le nom des containers (au lieu de l'IP, qui peut être aléatoire).
+
+> docker run --network mynet --name server1 -d alpine
+> docker run --network mynet --name server2 -d alpine
+
+> docker conainer kill server1
+> docker conainer kill server2
+> docker network rm mynet
+
+## Connecter un serveur Node.js et une bdd MongoDB
+
+BDD
+
+> docker volume create mydb
+> docker run --name db --mount type=volume, source=mydb, target=/data/db -d mongo
+> docker network create mynet
+> docker network connect mynet db
+
+SERVEUR NODE
+On ajoute un package au Dockerfile de node-server (package.json) : "mongodb": "3.6.2."
+
+> docker build -t node-server .
+> docker run --name server --mount type=bind, source="$(pwd")/src, target=/app/src -p 80:80 --network mynet node-server
+
+## Configuration du serveur
+
+> docker build -t node-server .
+
+> docker run --name server --network mynet -p 80:80 node-server
+
+## Le réseau host
+
+Pas besoin de préciser les ports.
+
+> docker run --network host node-server
+
+Lancer un serveur sans réseau :
+
+> docker run --network none node-server
+
+# 7. Utiliser Docker Compose
+
+## Introduction à Docker compose
