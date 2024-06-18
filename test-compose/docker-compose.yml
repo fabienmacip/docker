@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  a:
+    image: alpine
+    command: ["ls"]
+  b:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        - FOLDER=test

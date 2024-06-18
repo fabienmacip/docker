@@ -645,3 +645,68 @@ Lancer un serveur sans réseau :
 # 7. Utiliser Docker Compose
 
 ## Introduction à Docker compose
+
+Une application = plusieurs services.
+Docker compose permet de lancer tout ça en un commande.
+
+Fichier : docker-compose.yml
+
+Grâce au contenu de docker-compose.yml, docker daemon peut :
+
+- Construire des images,
+- Lancer les containers,
+- Créer des réseaux,
+- Lancer des volumes.
+
+> docker compose version
+
+## Première utilisation de Docker Compose
+
+On renseigne le docker-compose.yml, puis :
+
+> docker compose up
+
+La commande docker compose run permet d'exécuter une commande par un service.
+
+> docker compose run myalpine
+
+On peut remplacer la commande par défaut de l'image en passant une autre commande en argument :
+
+> docker compose run myalpine ls
+
+Stopper les conteneurs lancés par Docker compose :
+
+> docker compose down
+
+## Utilisation d'images personnalisées avec Docker Compose
+
+Voir le sous-dossier _test-compose_.
+
+Créer l'image de tout ce qui est défini dans docker-compose.yml :
+
+> docker compose build
+
+## Les ports et les volumes avec Docker Compose
+
+Ajouter dans docker-compose.yml (ne pas laisser de ligne vide):
+
+> ports:
+
+> > - 80:80
+
+> volumes:
+
+> > - type: bind
+> >   source: ./data
+> >   target: /app/data
+> > - type: volume
+> >   source: datavolume
+> >   target: /ap/datavolume
+
+volumes:
+
+> datavolume:
+
+## Utiliser des variables d'environnement avec Docker Compose
+
+Reprendre à partir de la leçon 45 (chapitre 8).
