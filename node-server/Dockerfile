@@ -8,4 +8,4 @@ RUN npm install
 
 ENV PATH=$PATH:/app/node_modules/.bin
 
-CMD ["nodemon", "app.js"]
+CMD ["nodemon", "src/app.js"]

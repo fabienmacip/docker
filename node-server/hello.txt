@@ -1,0 +1,1 @@
+Ce fichier est inutile, donc à ignorer via le .dockerignore .

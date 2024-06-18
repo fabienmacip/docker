@@ -427,3 +427,169 @@ Mise en place d'un petit serveur Node.js , voir le dossier node-server.
    ENV PATH=$PATH:/app/node_modules/.bin
 
 ## Publier et exposer des ports
+
+Rappel des n° de ports :
+
+- 80 http
+- 443 https
+- 22 ssh
+
+> docker run -p ... <porthost>:<portcontainer> ...
+
+> docker run -p 80:80 myapp
+
+## Optimisation et .dockerignore
+
+### Optimisation
+
+Lorsqu'on modifie des fichiers de notre programme, pour éviter que Docker ignore le cache lors de la re-génération d'une image, on peut modifier le Dockerfile comme suit (voir les 2 commandes COPY) :
+
+FROM node:alpine
+WORKDIR /app
+COPY ./package.json .
+RUN npm install
+COPY . .
+ENV PATH=$PATH:/app/node_modules/.bin
+CMD ["nodemon", "app.js"]
+
+### .dockerignore
+
+hello.txt // ignore hello.txt à la racine du projet (dans le même dossier que le .dockerignore)
+
+\*/hello.txt // ignore hello.txt dans les 1ers sous-dossiers.
+
+\*\*/hello.txt // ignore hello.txt dans tous les sous-dossiers.
+
+hel\*.txt // ignore tous les fichiers (à la racine) qui commencent par hel et finissent par .txt .
+
+hel? // le ? matche avec 1 et 1 seul caractère. Donc ignorer par exemple hel1, hell, heli...
+
+Le # sert aux commentaires.
+
+### Autres commandes
+
+Cette commande lance mon serveur sans mettre à disposition l'accès au terminal de commande :
+
+> docker run --name myappnode -p 80:80 myapp
+
+On peut lancer n mode DETACH, puis prendre l'accès au terminal :
+
+> docker run -d --name myappnode -p 80:80 myapp
+> docker exec -it myappnode sh
+
+Statistiques :
+
+> docker container stats myappnode
+
+# 5. Persister des données avec Docker
+
+## Introduction à la persistance
+
+3 possibilités :
+
+- les VOLUMES
+- les BIND MOUNT
+- les TMPFS (stockage dans la RAM et non-persistant)
+
+## Les bind mounts
+
+Commande historique, non recommandée :
+
+> docker run -v <url-host>:<url-container> uneimage
+
+Commande recommandée :
+
+> docker run --mount type=bind, source=<url>, target=<url> uneimage
+
+Si j'ai un fichier hello.txt dans un dossier /data .
+
+> docker run --mount type=bind, source="$(pwd)/data", target=/data uneimage
+
+En mode interactif :
+
+> docker run --mount type=bind, source="$(pwd)/data", target=/data -it uneimage sh
+
+Si je fais :
+
+> ls data
+> echo 123 > hello.txt
+
+Le fichier hello.txt est modifié dans les 2 folders /data . Les 2 folders /data sont liés, et toute modification sur l'un est répercutée sur l'autre.
+
+## Utilisation d'un bind mount dans notre exemple
+
+> ls node-server
+
+> docker build -t mynodeapp:latest .
+
+> docker run --mount type=bind, source="$(pwd)/src", target=/app/src -it mynodeapp sh
+
+## Les VOLUMES
+
+> docker run --mount type=volume, source=<nom_volume>, target=<url> -it uneimage sh
+
+NB : _-it_ et _sh_ sont optionnels.
+
+> docker volume create mydata
+
+> docker volume ls
+
+> docker volume inspect mydata
+
+Supprimer :
+
+> docker volume rm mydata
+
+## Partager des volumes entre des conteneurs et effectuer des sauvegardes
+
+### Partager un volume
+
+Le volume est partagé entre cont1 et cont2, possiblement de cette façon :
+
+> docker run --mount type=volume, source=mydata, target=/data --name cont1 -it uneimage sh
+> docker run --mount type=volume, source=mydata, target=/data --name cont2 -it uneimage sh
+
+Sinon, avec --volumes-from :
+
+> docker run --mount type=volume, source=mydata, target=/data --name cont1 -it uneimage sh
+> docker run --volumes-from cont1 --name cont2 -it uneimage sh
+
+### Backup un volume
+
+Récupérer le contenu d'un volume :
+
+> docker container run --rm --volumes-from conteneur1 --mount type=bind,src="$(pwd)",target=/backup alpine tar -cf /backup/backup.tar /data
+
+Insérer un tar.gz dans un volume :
+
+> docker run --mount type=volume,source=restore,target=/data --mount type=bind,source="$(pwd)",target=/backup -it alpine tar -xf /backup/backup.tar --strip-components 1 -C /data
+
+## Utiliser un volume pour une base de données
+
+> docker run -it mongo sh
+
+> docker volume create mydb
+
+> docker run --mount type=volume, source=mydb, target=/data/db -d mongo
+
+Ouvrir la BDD et pouvoir communiquer avec :
+
+> docker run -p 27018:27017 --mount type=volume, source=mydb, target=/data/db -d mongo
+
+## Utiliser TMPFS
+
+Fonctionne sur Linux, pas sur Windows ni Mac.
+
+> docker run --mount type=tmpfs, target=/data -it mynodeapp sh
+
+Pas de "source" puisque ici c'est la RAM.
+
+Les TMPFS ne sont pas persistés. Ils permettent de garder des données en mémoire vive uniquement. Les principaux cas d'utilisation sont :
+
+- données secrètes (mots de passe, secrets pour des paires de clés ou pour de l'encryption symétrique etc).
+
+- données d'état qui seraient trop volumineuses pour être persistées ou trop coûteuse en performance pour être écrites sur disque.
+
+### 6. Les réseaux Docker
+
+## Introduction aux réseaux
